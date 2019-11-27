@@ -9,7 +9,8 @@ import {
   IfFirebaseAuthed,
   IfFirebaseUnAuthed
 } from "@react-firebase/auth";
-
+import { FirebaseAppProvider } from 'reactfire';
+import 'firebase/performance';
 // core components
 import Admin from "layouts/Admin.js";
 import { State } from "react-powerplug";
@@ -38,6 +39,13 @@ const config = {
 var docRef = firestore.collection("users");
 
 export const AuthContext = React.createContext(null);
+
+const UserContext = React.createContext({})
+export const UserProvider = UserContext.Provider
+export const UserConsumer = UserContext.Consumer
+export default UserContext
+
+React.createContext(true)
 
 
 
@@ -257,8 +265,19 @@ function PrivateRoute({ children, ...rest }) {
 }
 
 
-const AppFBAuth = () => {
+  class AppFBAuth extends React.Component {
+
+
+    componentWillMount() {
+        window.MyVars = {
+            loggedIn : false
+        };
+    }
+
+  render() {
+
   return (
+
     <FirebaseAuthProvider {...config} firebase={firebase}>
 
     <div>
@@ -276,10 +295,7 @@ const AppFBAuth = () => {
   </IfFirebaseAuthed>
   <IfFirebaseUnAuthed>
     {({ firebase }) => (
-      <div>
-        <h2>You're not signed in to SES </h2>
-        <GoogleLogin/>
-      </div>
+      <Login/>
     )}
   </IfFirebaseUnAuthed>
 </div>
@@ -287,7 +303,10 @@ const AppFBAuth = () => {
 
   )
 }
+}
 ReactDOM.render(
-  <AppFBAuth/>,
+  <FirebaseAppProvider firebaseConfig={config} initPerformance>
+  <AppFBAuth/>
+</FirebaseAppProvider>,
   document.getElementById("root")
 );
