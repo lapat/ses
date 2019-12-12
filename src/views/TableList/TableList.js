@@ -1,13 +1,13 @@
 import React, { Component, useEffect }  from 'react';
 // @material-ui/core components
-import {
-  useFirestore,
-  FirebaseAppProvider,
-  useFirestoreDocData,
-  useFirestoreCollectionData,
-  SuspenseWithPerf
-} from 'reactfire';
+
 import 'firebase/performance';
+import {
+  FirebaseAuthProvider,
+  FirebaseAuthConsumer,
+  IfFirebaseAuthed,
+  IfFirebaseUnAuthed
+} from "@react-firebase/auth";
 
 import { makeStyles } from "@material-ui/core/styles";
 // core components
@@ -17,52 +17,23 @@ import Table from "components/Table/Table.js";
 import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
-import fire from 'fire';
-var firestore = fire.firestore();
+import * as firebase from 'firebase'
+var firestore = firebase.firestore();
 var docRef = firestore.collection("users");
+var db = firebase.firestore();
+
+
 //...
-function Burrito() {
-  // lazy load the Firestore SDK
-  const firestore = useFirestore();
 
-  // create a document reference
-  const burritoRef = firestore()
-    .collection('users')
-    .doc('a');
 
-  // subscribe to the doc. just one line!
-  const burrito = useFirestoreDocData(burritoRef);
-
-  // get the value from the doc
-  const isYummy = burrito.yummy;
-
-  return <p>The burrito is {burrito.speed}</p>;
-}
-
-function Tester() {
-  return (
-    <div className="App">
-          <SuspenseWithPerf
-            fallback={'loading burrito status...'}
-            traceId={'load-burrito-status'}
-          >
-            <Burrito />
-          </SuspenseWithPerf>
-        </div>
-    );
-}
 
 export default function tableWrapper(){
   return (
     <div className="App">
-          <SuspenseWithPerf
-            fallback={'loading burrito status...'}
-            traceId={'load-burrito-status'}
-          >
-            <TableList />
-          </SuspenseWithPerf>
-        </div>
-    );
+
+    <TableList />
+    </div>
+  );
 }
 
 const styles = {
@@ -99,56 +70,86 @@ const useStyles = makeStyles(styles);
 function mapDataToTable(videoData){
   var index;
   var tableArray= []
+  //console.log("VIDEODATE:"+JSON.stringify(videoData))
   for (index in videoData){
-    var isGraded = "Yes";
-    if (videoData[index].grade){
-      isGraded = "No"
-    }
+
     var row = [
       videoData[index].name,
       videoData[index].email,
       {is_url : true, url : videoData[index].video_link},
-      {is_graded : videoData[index].graded}
+      {is_graded : videoData[index].graded, id :videoData[index].id},
     ]
     tableArray.push(row)
   }
   return tableArray;
 }
 
+
+
 function TableList() {
   const classes = useStyles();
-  // lazy load the Firestore SDK
-  const firestore = useFirestore();
+  const [videos, setVideos] = React.useState([]);
+  var videosTwo =  [];
+  var videoTableMappedTwo = [];
+  useEffect(() => {
+    var user = firebase.auth().currentUser;
+    if (user) {
+      console.log("user signed in:"+JSON.stringify(user));
+    } else {
+      console.log("user NOT signed in.");
+    }
 
-  // create a document reference
-  const videosRef = firestore().collection('videos');
+    let doc = db.collection('videos').where('group', '==', 'a');
+    let observer = doc.onSnapshot(querySnapshot => {
+    console.log(`Received query snapshot of size ${querySnapshot.size}`);
+    //console.log("Q:"+JSON.stringify(querySnapshot))
+    if (videosTwo.length===0){
+      querySnapshot.forEach(function(video) {
+        videosTwo.push(video.data())
+      })
+      videoTableMappedTwo = mapDataToTable(videosTwo)
+      //console.log("J:"+JSON.stringify(videoTableMappedTwo))
+      setVideos(videoTableMappedTwo)
+    }else{
+      videosTwo=[]
+      querySnapshot.forEach(function(video) {
+        //console.log("video:"+JSON.stringify(video))
+        videosTwo.push(video.data())
+      })
+      videoTableMappedTwo = mapDataToTable(videosTwo)
+      setVideos(videoTableMappedTwo)
 
-  // subscribe to the doc. just one line!
-  const video = useFirestoreCollectionData(videosRef);
-  const videoTableMapped = mapDataToTable(video)
-  //console.log("VIDEO:"+JSON.stringify(videoTableMapped))
-  return (
-    <GridContainer>
+      //to do - handle real time updates?
+    }
+    // ...
+  }, err => {
+    console.log(`Encountered error: ${err}`);
+  });
+}, []);
 
-      <GridItem xs={12} sm={12} md={12}>
-        <Card plain>
-          <CardHeader plain color="primary">
-            <h4 className={classes.cardTitleWhite}>
-              Table on Plain Background
-            </h4>
-            <p className={classes.cardCategoryWhite}>
-              Here is a subtitle for this table
-            </p>
-          </CardHeader>
-          <CardBody>
-            <Table
-              tableHeaderColor="primary"
-              tableHead={["Name", "Email", "Video Link", "Graded"]}
-              tableData={videoTableMapped}
-            />
-          </CardBody>
-        </Card>
-      </GridItem>
-    </GridContainer>
-  );
+
+return (
+  <GridContainer>
+
+  <GridItem xs={12} sm={12} md={12}>
+  <Card plain>
+  <CardHeader plain color="primary">
+  <h4 className={classes.cardTitleWhite}>
+  Videos Submitted By Students
+  </h4>
+  <p className={classes.cardCategoryWhite}>
+
+  </p>
+  </CardHeader>
+  <CardBody>
+  <Table
+  tableHeaderColor="primary"
+  tableHead={["Name", "Email", "Video Link", "Graded"]}
+  tableData={videos}
+  />
+  </CardBody>
+  </Card>
+  </GridItem>
+  </GridContainer>
+);
 }

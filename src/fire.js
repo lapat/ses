@@ -1,4 +1,5 @@
-import firebase from 'firebase'
+import * as firebase from 'firebase'
+
 const config = {
   apiKey: "AIzaSyCi5366e-I8MXCD979TKiUxplGsSw81d0Q",
   authDomain: "videolearn-ae4bc.firebaseapp.com",

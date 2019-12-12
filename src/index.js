@@ -1,7 +1,8 @@
 
 import React, { Component } from 'react';
 import ReactDOM from "react-dom";
-import { createBrowserHistory } from "history";
+//import { createBrowserHistory } from './history';
+import history from './history';
 import { Router, Route, Switch, Redirect } from "react-router-dom";
 import {
   FirebaseAuthProvider,
@@ -9,8 +10,6 @@ import {
   IfFirebaseAuthed,
   IfFirebaseUnAuthed
 } from "@react-firebase/auth";
-import { FirebaseAppProvider } from 'reactfire';
-import 'firebase/performance';
 // core components
 import Admin from "layouts/Admin.js";
 import { State } from "react-powerplug";
@@ -22,8 +21,6 @@ import Login from "views/Login/Login.js";
 import GoogleLogin from "views/Login/GoogleLogin.js";
 
 import * as firebase from 'firebase/app';
-import fire from './fire';
-var firestore = fire.firestore();
 
 
 const config = {
@@ -36,20 +33,12 @@ const config = {
   appId: "1:36149314389:web:937f8bd9e4b4d8b21e65dc",
   measurementId: "G-HEXRKLHY9D"
 };
-var docRef = firestore.collection("users");
-
-export const AuthContext = React.createContext(null);
-
-const UserContext = React.createContext({})
-export const UserProvider = UserContext.Provider
-export const UserConsumer = UserContext.Consumer
-export default UserContext
-
-React.createContext(true)
 
 
 
-const hist = createBrowserHistory();
+
+
+const hist = history;
 
 const IDontCareAboutFirebaseAuth = () => {
   return <div>This part won't react to firebase auth changes</div>;
@@ -80,69 +69,17 @@ const getCenterChildrenStyle = () => {
 const RowWithRightAlignedContent = ({ children }) => {
   return (
     <div
-      style={{
-        width: "100%",
-        display: "flex",
-        justifyContent: "flex-end"
-      }}
+    style={{
+      width: "100%",
+      display: "flex",
+      justifyContent: "flex-end"
+    }}
     >
-      {children}
+    {children}
     </div>
   );
 };
 
-const UnAuthedPage = () => {
-  return (
-    <State initial={{ isLoading: false, error: null }}>
-      {({ state, setState }) => (
-        <div
-          style={{
-            width: 600,
-            height: 300,
-            display: "flex",
-            alignContent: "center",
-            justifyContent: "space-around",
-            flexDirection: "column"
-          }}
-        >
-          <div>isLoading : {JSON.stringify(state.isLoading)}</div>
-          <div>error : {JSON.stringify(state.error)}</div>
-
-          <Button
-            {...getButtonStyleProps()}
-            onClick={async () => {
-              try {
-                setState({ isLoading: true, error: null });
-                const googleAuthProvider = new firebase.auth.GoogleAuthProvider();
-                await firebase.auth().signInWithPopup(googleAuthProvider);
-                // setState({ isLoading: false, error: null });
-              } catch (error) {
-                setState({ isLoading: false, error: error });
-              }
-            }}
-          >
-          Google Signin
-          </Button>
-          <Button
-            {...getButtonStyleProps()}
-            onClick={async () => {
-              try {
-                setState({ isLoading: true, error: null });
-                const emailAuthProvider = new firebase.auth.EmailAuthProvider();
-                await firebase.auth().signInWithPopup(emailAuthProvider);
-                // setState({ isLoading: false, error: null });
-              } catch (error) {
-                setState({ isLoading: false, error: error });
-              }
-            }}
-          >
-          Email/Password Signin
-          </Button>
-        </div>
-      )}
-    </State>
-  );
-};
 
 export type HeaderProps = {
   renderLogout: () => React.ReactNode;
@@ -152,161 +89,95 @@ const Header = ({
 }: HeaderProps) => {
   return (
     <div
-      style={{
-        height: 100,
-        width: "100%",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center"
-      }}
+    style={{
+      height: 100,
+      width: "100%",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    }}
     >
-      <div
-        style={{
-          height: 200,
-          width: "40%",
-          alignSelf: "center",
-          ...getCenterChildrenStyle()
-        }}
-      >
-        FUCK
-      </div>
-      <div
-        style={{
-          height: 200,
-          width: "30%",
-          ...getCenterChildrenStyle()
-        }}
-      >
-        {renderLogout()}
-      </div>
+    <div
+    style={{
+      height: 200,
+      width: "40%",
+      alignSelf: "center",
+      ...getCenterChildrenStyle()
+    }}
+    >
+    FUCK
+    </div>
+    <div
+    style={{
+      height: 200,
+      width: "30%",
+      ...getCenterChildrenStyle()
+    }}
+    >
+    {renderLogout()}
+    </div>
     </div>
   );
 };
 
-class AuthedPage extends React.Component {
-  newLinkTextFieldRef = React.createRef();
-  newLinkMetaTextFieldRef = React.createRef();
+
+
+class CheckSignedInFB extends React.Component {
   render() {
     return (
-      <>
-        <div style={{ width: "80%" }}>
-          <div style={{ width: "100%" }}>
-            <Header
-              renderLogout={() => (
-                <Button
-                  {...getButtonStyleProps()}
-                  onClick={async () => {
-                    await firebase
-                      .app()
-                      .auth()
-                      .signOut();
-                  }}
-                >
-                  Sign Out
-                </Button>
-              )}
-              shit
-            />
-          </div>
 
-
-        </div>
-      </>
-    );
+      <FirebaseAuthConsumer>
+      {({ isSignedIn, firebase }) => {
+        console.log("isSignedIn:"+isSignedIn)
+        if (isSignedIn === true) {
+          return (
+            <Router history={hist}>
+            {console.log("hist:"+JSON.stringify(hist))}
+            <Switch>
+            <Route path="/admin" component={Admin} />
+            <Redirect from="/" to="/admin/table" />
+            </Switch>
+            </Router>
+          );
+        } else {
+          return (
+            <Login>
+            </Login>
+          );
+        }
+      }}
+      </FirebaseAuthConsumer>
+    )
   }
 }
 
-const FirebaseTest = () => {
-
-  return (
-      <FirebaseAuthProvider {...config} firebase={firebase}>
-
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            justifyContent: "center",
-            background: "#ECEFF1"
-          }}
-        >
-          <IfFirebaseUnAuthed>
-            <UnAuthedPage />
-          </IfFirebaseUnAuthed>
-          <IfFirebaseAuthed>{() => <AuthedPage />}</IfFirebaseAuthed>
-        </div>
-      </FirebaseAuthProvider>
-    );
-}
-
-function isLoggedIn(props){
-  return false;
-}
-
-
-
-
-function PrivateRoute({ children, ...rest }) {
-  return (
-    <FirebaseAuthProvider {...config} firebase={firebase}>
-    <Route
-      {...rest}
-      render={({ location }) =>
-        isLoggedIn() ? (
-          children
-        ) : (
-          <FirebaseTest />
-        )
-      }
-    />
-    </FirebaseAuthProvider>
-
-  );
-}
-
-
-  class AppFBAuth extends React.Component {
-
-
-    componentWillMount() {
-        window.MyVars = {
-            loggedIn : false
-        };
-    }
-
+class CheckSignedIn extends React.Component {
   render() {
-
-  return (
-
-    <FirebaseAuthProvider {...config} firebase={firebase}>
-
-    <div>
-  <IfFirebaseAuthed>
-
-    {() => (
-      <Router history={hist}>
-      {console.log("hist:"+JSON.stringify(hist))}
+    if(true){
+      return (
+        <Router history={hist}>
+        {console.log("hist:"+JSON.stringify(hist))}
         <Switch>
-          <Route path="/admin" component={Admin} />
-          <Redirect from="/" to="/admin/dashboard" />
+        <Route path="/admin" component={Admin} />
+        <Redirect from="/" to="/admin/table" />
         </Switch>
-      </Router>
-    )}
-  </IfFirebaseAuthed>
-  <IfFirebaseUnAuthed>
-    {({ firebase }) => (
-      <Login/>
-    )}
-  </IfFirebaseUnAuthed>
-</div>
-</FirebaseAuthProvider>
+        </Router>
+      )
+    }else{
+      return(
+        <Login>
+        </Login>
+      )
+    }
+  }
+}
 
-  )
-}
-}
+
+
 ReactDOM.render(
-  <FirebaseAppProvider firebaseConfig={config} initPerformance>
-  <AppFBAuth/>
-</FirebaseAppProvider>,
+  <FirebaseAuthProvider  {...config} firebase={firebase}>
+    <CheckSignedInFB>
+  </CheckSignedInFB>
+  </FirebaseAuthProvider>,
   document.getElementById("root")
 );

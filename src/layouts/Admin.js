@@ -27,15 +27,6 @@ import logo from "assets/img/reactlogo.png";
 
 let ps;
 
-const Fuck = () => {
-
-  return (
-
-        <div>
-        FUCK
-        </div>
-      )
-    }
 
 const switchRoutes = (
   <Switch>
@@ -53,8 +44,8 @@ const switchRoutes = (
       }
       {/*return null;*/}
     })}
-    <Redirect from="/" to="/admin/record" />
-    <Redirect from="/admin" to="/admin/record" />
+    <Redirect from="/" to="/admin/videos" />
+    <Redirect from="/admin" to="/admin/videos" />
   </Switch>
 );
 

@@ -41,42 +41,36 @@ import RTLPage from "views/RTLPage/RTLPage.js";
 
 const dashboardRoutes = [
 
+
   {
-    path: "/login",
-    name: "Signin",
-    rtlName: "login",
-    icon: Person,
-    component: Login,
-    layout: "/admin",
-    invisible : false
-  },
-  {
-    path: "/google_login",
-    name: "GoogleSignin",
-    rtlName: "googleSignin",
-    icon: Person,
-    component: GoogleLogin,
-    layout: "/admin",
-    invisible : false
-  },
-  {
-    path: "/user",
-    name: "Your Profile",
-    rtlName: "ملف تعريفي للمستخدم",
-    icon: Person,
-    component: UserProfile,
-    layout: "/admin",
-    invisible : false
-  },
-  {
-    path: "/table",
-    name: "Your Videos",
+    path: "/videos",
+    name: "Videos",
     rtlName: "قائمة الجدول",
     icon: "content_paste",
     component: TableList,
     layout: "/admin",
     invisible : false
   },
+  {
+    path: "/user",
+    name: "Profile",
+    rtlName: "ملف تعريفي للمستخدم",
+    icon: Person,
+    component: UserProfile,
+    layout: "/admin",
+    invisible : false
+  },
+
+  {
+    path: "/signout",
+    name: "Sign Out",
+    rtlName: "googleSignin",
+    icon: Person,
+    component: GoogleLogin,
+    layout: "/admin",
+    invisible : false
+  }
+  /*,
   {
     path: "/record",
     name: "Record Skills",
@@ -85,7 +79,7 @@ const dashboardRoutes = [
     component: Typography,
     layout: "/admin",
     invisible : false
-  }/*,
+  },
   {
     path: "/icons",
     name: "Icons",

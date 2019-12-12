@@ -17,8 +17,6 @@ import { Button, MenuItem, TextField, RootRef } from "@material-ui/core";
 
 
 import * as firebase from 'firebase/app';
-import fire from 'fire';
-var firestore = fire.firestore();
 
 
 const config = {
@@ -31,7 +29,6 @@ const config = {
   appId: "1:36149314389:web:937f8bd9e4b4d8b21e65dc",
   measurementId: "G-HEXRKLHY9D"
 };
-var docRef = firestore.collection("users");
 
 export const AuthContext = React.createContext(null);
 
@@ -147,20 +144,11 @@ const Header = ({
         alignItems: "center"
       }}
     >
+    Sign out of SES
       <div
         style={{
           height: 200,
-          width: "40%",
-          alignSelf: "center",
-          ...getCenterChildrenStyle()
-        }}
-      >
-        FUCK
-      </div>
-      <div
-        style={{
-          height: 200,
-          width: "30%",
+          width: "50%",
           ...getCenterChildrenStyle()
         }}
       >
@@ -207,7 +195,6 @@ const GoogleLogin = () => {
 
   return (
       <FirebaseAuthProvider {...config} firebase={firebase}>
-
         <div
           style={{
             width: "100%",
